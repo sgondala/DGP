@@ -60,8 +60,31 @@ PointKDTree::PointKDTree(std::vector<Point> const & points): root(NULL) {
 	tempPoints.clear();
 }
 
-void PointKDTree::rangeQuery(AxisAlignedBox3 const & query, std::vector<Point *> & points_in_range) const{
+void fillPoints(Node* root, std::vector<const Point*> &allPoints){
+	if(root==NULL){return;}
+	if((root->points).size()==0){
+		fillPoints(root->lo, allPoints);
+		fillPoints(root->hi, allPoints);
+	}
+	else{
+		for(int i=0; i<(root->points).size(); i++){
+			allPoints.push_back((root->points)[i]);
+		}
+	}
+}
+
+void PointKDTree::rangeQuery(AxisAlignedBox3 const & query, 
+	std::vector<const Point *> & points_in_range) const{
 	points_in_range.clear();
+
+	// Bevarse version
+	std::vector<const Point*> allPoints;
+	fillPoints(root, allPoints);
+	for(int i=0; i<allPoints.size(); i++){
+		if(query.intersects(allPoints[i]->getPosition())){
+			points_in_range.push_back(allPoints[i]);
+		}
+	}
 
 	// Write a helper function rangeQuery(node, query, points_in_range):
 	//   - If node->bbox does not intersect query, return

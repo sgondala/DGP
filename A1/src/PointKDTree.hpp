@@ -50,7 +50,7 @@ class PointKDTree : private Noncopyable
      * Note that if needed, the index of a returned point p (of type Point *) can be recovered as (p - &points[0]), where
      * points is the array used to construct the kd-tree.
      */
-    void rangeQuery(AxisAlignedBox3 const & query, std::vector<Point *> & points_in_range) const;
+    void rangeQuery(AxisAlignedBox3 const & query, std::vector<const Point *> & points_in_range) const;
 
 }; // class PointKDTree
 
