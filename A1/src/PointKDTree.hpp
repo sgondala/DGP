@@ -15,7 +15,7 @@ struct Node {
   /** Destructor. */
   ~Node();
 
-  Node(std::vector<Point> &points);
+  Node(std::vector<const Point*> &points);
 
   AxisAlignedBox3 bbox;         ///< Bounding box of the node.
   Node * lo;                    ///< Child of the node with smaller coordinates.

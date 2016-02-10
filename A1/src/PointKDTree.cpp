@@ -5,11 +5,11 @@ Node::~Node() {
 	delete hi;
 }
 
-void fillLoAndHi(std::vector<Point> &loPoints, 
-	std::vector<Point> &hiPoints, std::vector<Point> &points, 
+void fillLoAndHi(std::vector<const Point*> &loPoints, 
+	std::vector<const Point*> &hiPoints, std::vector<const Point*> &points, 
 	float midValue, int index){
 	for(int i=0; i<points.size(); i++){
-		if((points[i].getPosition())[index] < midValue){
+		if((points[i]->getPosition())[index] < midValue){
 			loPoints.push_back(points[i]);
 		}
 		else{
@@ -18,20 +18,20 @@ void fillLoAndHi(std::vector<Point> &loPoints,
 	}
 }
 
-Node::Node(std::vector<Point> &points){
+Node::Node(std::vector<const Point*> &points){
 	static size_t const MAX_POINTS_PER_LEAF = 5;
 	for(int i=0; i<points.size(); i++){
-		bbox.addPoint(points[i].getPosition());
+		bbox.addPoint((*points[i]).getPosition());
 	}
 	if(points.size()<=MAX_POINTS_PER_LEAF){
 		lo = hi = NULL;
 		for (int i=0; i<points.size(); i++){
-			(this->points).push_back(&points[i]);
+			(this->points).push_back(points[i]);
 		}
 	}
 	else {
-		std::vector<Point> loPoints; //TODO ME Might have a leak here
-		std::vector<Point> hiPoints;
+		std::vector<const Point*> loPoints; //TODO ME Might have a leak here
+		std::vector<const Point*> hiPoints;
 		Vector3 high = bbox.getHigh();
 		Vector3 low = bbox.getLow();
 		int maxLength = std::max(high[0]-low[0], std::max(high[1] - low[1], high[2] - low[2]));
@@ -52,9 +52,9 @@ Node::Node(std::vector<Point> &points){
 }
 
 PointKDTree::PointKDTree(std::vector<Point> const & points): root(NULL) {
-	std::vector<Point> tempPoints; //Probable memory wastage
+	std::vector<const Point*> tempPoints; //Probable memory wastage
 	for(int i=0; i<points.size(); i++){
-		tempPoints.push_back(points[i]);
+		tempPoints.push_back(&points[i]);
 	}
 	root = new Node(tempPoints);
 	tempPoints.clear();
