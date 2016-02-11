@@ -179,22 +179,7 @@ int getMinIndex(float* f){
 	if(minVal==f[2]){return 2;}
 }
 
-void findPointsKDTree(AxisAlignedBox3 &boxTemp,
-	std::vector<Point> &pointsTemp, 
-	PointKDTree &kdTree){
-
-	std::vector<const Point*> pointerToPoints;
-	kdTree.rangeQuery(boxTemp, pointerToPoints);
-	
-	// std::cout<<pointerToPoints.size()<<std::endl;
-	for(int i=0; i<pointerToPoints.size(); i++){
-		pointsTemp.push_back(*pointerToPoints[i]);
-	}
-
-}
-
-void
-PointCloud::estimateNormals(){
+void PointCloud::estimateNormals(){
 
 	PointKDTree kdTree(points);
 	double radius = 0.5;
@@ -215,18 +200,14 @@ PointCloud::estimateNormals(){
 		boxTemp.addPoint(high);
 		
 		//Finding points in box
-		std::vector<Point> pointsTemp;
+		std::vector<Point*> pointsTemp;
 
-		// Normal Way
-		// findPointsInBox(boxTemp, pointsTemp, points);
-		
-		// KD Tree
-		findPointsKDTree(boxTemp, pointsTemp, kdTree);
+		kdTree.rangeQuery(boxTemp, pointsTemp);
 
-		//Finding a
+		// Finding a
 		VectorN<3,float> a(0);
 		for(int j=0; j<pointsTemp.size(); j++){
-			a += pointsTemp[j].getPosition();
+			a += pointsTemp[j]->getPosition();
 		}
 		a /= pointsTemp.size();
 
@@ -236,9 +217,9 @@ PointCloud::estimateNormals(){
 		for(int j=0; j<pointsTemp.size(); j++){
 			// Vector3 ul = pointsTemp[i].getPosition() - a;
 			MatrixMN<3,1,float> y;
-			y.setColumn(0, pointsTemp[j].getPosition() - a);
+			y.setColumn(0, pointsTemp[j]->getPosition() - a);
 			MatrixMN<1,3,float> yTrans;
-			yTrans.setRow(0, pointsTemp[j].getPosition() - a);
+			yTrans.setRow(0, pointsTemp[j]->getPosition() - a);
 			Matrix3 finalMatrixTemp = y*yTrans;
 			finalMatrix += finalMatrixTemp;
 		}
@@ -263,3 +244,18 @@ PointCloud::adaptiveDownsample()
 {
 	// TODO
 }
+
+
+// Unnecesary
+// void findPointsKDTree(AxisAlignedBox3 &boxTemp,
+// 	std::vector<Point> &pointsTemp, 
+// 	PointKDTree &kdTree){
+
+// 	std::vector<const Point*> pointerToPoints;
+// 	kdTree.rangeQuery(boxTemp, pointerToPoints);
+	
+// 	// std::cout<<pointerToPoints.size()<<std::endl;
+// 	for(int i=0; i<pointerToPoints.size(); i++){
+// 		pointsTemp.push_back(*pointerToPoints[i]);
+// 	}
+// }

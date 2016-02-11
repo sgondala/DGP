@@ -6,8 +6,8 @@ Node::~Node() {
 	delete hi;
 }
 
-void fillLoAndHi(std::vector<const Point*> &loPoints, 
-	std::vector<const Point*> &hiPoints, std::vector<const Point*> &points, 
+void fillLoAndHi(std::vector<Point*> &loPoints, 
+	std::vector<Point*> &hiPoints, std::vector<Point*> &points, 
 	float midValue, int index){
 	for(int i=0; i<points.size(); i++){
 		if((points[i]->getPosition())[index] < midValue){
@@ -19,7 +19,7 @@ void fillLoAndHi(std::vector<const Point*> &loPoints,
 	}
 }
 
-Node::Node(std::vector<const Point*> &points){
+Node::Node(std::vector<Point*> &points){
 	static size_t const MAX_POINTS_PER_LEAF = 5;
 	for(int i=0; i<points.size(); i++){
 		bbox.addPoint((*points[i]).getPosition());
@@ -31,8 +31,8 @@ Node::Node(std::vector<const Point*> &points){
 		}
 	}
 	else {
-		std::vector<const Point*> loPoints; //TODO ME Might have a leak here
-		std::vector<const Point*> hiPoints;
+		std::vector<Point*> loPoints; //TODO ME Might have a leak here
+		std::vector<Point*> hiPoints;
 		Vector3 high = bbox.getHigh();
 		Vector3 low = bbox.getLow();
 		int maxLength = std::max(high[0]-low[0], std::max(high[1] - low[1], high[2] - low[2]));
@@ -47,35 +47,35 @@ Node::Node(std::vector<const Point*> &points){
 		}
 		lo = new Node(loPoints);
 		hi = new Node(hiPoints);
-		loPoints.clear();
-		hiPoints.clear();
+		// loPoints.clear();
+		// hiPoints.clear();
 	}
 }
 
-PointKDTree::PointKDTree(std::vector<Point> const & points): root(NULL) {
-	std::vector<const Point*> tempPoints; //Probable memory wastage
+PointKDTree::PointKDTree(std::vector<Point> &points): root(NULL) {
+	std::vector<Point*> tempPoints; //Probable memory wastage
 	for(int i=0; i<points.size(); i++){
 		tempPoints.push_back(&points[i]);
 	}
 	root = new Node(tempPoints);
-	tempPoints.clear();
+	// tempPoints.clear();
 }
 
-void fillPoints(Node* root, std::vector<const Point*> &allPoints){
-	if(root==NULL){return;}
-	if((root->points).size()==0){
-		fillPoints(root->lo, allPoints);
-		fillPoints(root->hi, allPoints);
-	}
-	else{
-		for(int i=0; i<(root->points).size(); i++){
-			allPoints.push_back((root->points)[i]);
-		}
-	}
-}
+// void fillPoints(Node* root, std::vector<Point*> &allPoints){
+// 	if(root==NULL){return;}
+// 	if((root->points).size()==0){
+// 		fillPoints(root->lo, allPoints);
+// 		fillPoints(root->hi, allPoints);
+// 	}
+// 	else{
+// 		for(int i=0; i<(root->points).size(); i++){
+// 			allPoints.push_back((root->points)[i]);
+// 		}
+// 	}
+// }
 
 void rangeQueryHelper(Node* root, AxisAlignedBox3 const & query,
-	std::vector<const Point *> &points_in_range){ 
+	std::vector<Point *> &points_in_range){ 
 
 	if(root==NULL){
 		return;
@@ -89,36 +89,16 @@ void rangeQueryHelper(Node* root, AxisAlignedBox3 const & query,
 			rangeQueryHelper(root->hi, query, points_in_range);
 		}
 		for(int i=0; i<(root->points).size(); i++){
-			const Point* thisPointPointer = (root->points)[i]; 
+			Point* thisPointPointer = (root->points)[i]; 
 			if(query.intersects(thisPointPointer->getPosition())){
 				points_in_range.push_back(thisPointPointer);
 			}
 		}
-
 	}
-
-	//TODO ME - Check why this is wrong
-	// if((root->points).size()!=0){
-	// 	for(int i=0; i<(root->points).size(); i++){
-	// 		if(query.intersects(((root->points)[i])->getPosition())){
-	// 			points_in_range.push_back((root->points)[i]);
-	// 		}
-	// 	}
-	// }
-
-	// else if(query.intersects(root->bbox)) {
-	
-	// 	if(root->lo && query.intersects(root->lo->bbox)){
-	// 		rangeQueryHelper(root->lo, query, points_in_range);	
-	// 	}
-	// 	if(root->hi && query.intersects(root->hi->bbox)){
-	// 		rangeQueryHelper(root->lo, query, points_in_range);
-	// 	}
-	// }
 }
 
-void PointKDTree::rangeQuery(AxisAlignedBox3 const & query, 
-	std::vector<const Point *> & points_in_range) const{
+void PointKDTree::rangeQuery(AxisAlignedBox3 & query, 
+	std::vector<Point *> & points_in_range) const{
 	points_in_range.clear();
 
 	rangeQueryHelper(root, query, points_in_range);
