@@ -1,4 +1,5 @@
 #include "PointKDTree.hpp"
+#include <list>
 
 Node::~Node() {
 	delete lo;
@@ -73,20 +74,62 @@ void fillPoints(Node* root, std::vector<const Point*> &allPoints){
 	}
 }
 
+void rangeQueryHelper(Node* root, AxisAlignedBox3 const & query,
+	std::vector<const Point *> &points_in_range){ 
+
+	if(root==NULL){
+		return;
+	}
+
+	if(query.intersects(root->bbox)){
+		if(root->lo){
+			rangeQueryHelper(root->lo, query, points_in_range);
+		}
+		if(root->hi){
+			rangeQueryHelper(root->hi, query, points_in_range);
+		}
+		for(int i=0; i<(root->points).size(); i++){
+			const Point* thisPointPointer = (root->points)[i]; 
+			if(query.intersects(thisPointPointer->getPosition())){
+				points_in_range.push_back(thisPointPointer);
+			}
+		}
+
+	}
+
+	//TODO ME - Check why this is wrong
+	// if((root->points).size()!=0){
+	// 	for(int i=0; i<(root->points).size(); i++){
+	// 		if(query.intersects(((root->points)[i])->getPosition())){
+	// 			points_in_range.push_back((root->points)[i]);
+	// 		}
+	// 	}
+	// }
+
+	// else if(query.intersects(root->bbox)) {
+	
+	// 	if(root->lo && query.intersects(root->lo->bbox)){
+	// 		rangeQueryHelper(root->lo, query, points_in_range);	
+	// 	}
+	// 	if(root->hi && query.intersects(root->hi->bbox)){
+	// 		rangeQueryHelper(root->lo, query, points_in_range);
+	// 	}
+	// }
+}
+
 void PointKDTree::rangeQuery(AxisAlignedBox3 const & query, 
 	std::vector<const Point *> & points_in_range) const{
 	points_in_range.clear();
 
+	rangeQueryHelper(root, query, points_in_range);
+
 	// Bevarse version
-	std::vector<const Point*> allPoints;
-	fillPoints(root, allPoints);
-	for(int i=0; i<allPoints.size(); i++){
-		if(query.intersects(allPoints[i]->getPosition())){
-			points_in_range.push_back(allPoints[i]);
-		}
-	}
-	// Write a helper function rangeQuery(node, query, points_in_range):
-	//   - If node->bbox does not intersect query, return
-	//   - If node->lo && node->lo->bbox intersects query, rangeQuery(node->lo, query, points_in_range)
-	//   - If node->hi && node->hi->bbox intersects query, rangeQuery(node->hi, query, points_in_range)
+	// std::vector<const Point*> allPoints;
+	// fillPoints(root, allPoints);
+	// for(int i=0; i<allPoints.size(); i++){
+	// 	if(query.intersects(allPoints[i]->getPosition())){
+	// 		points_in_range.push_back(allPoints[i]);
+	// 	}
+	// }
+
 }

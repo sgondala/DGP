@@ -162,15 +162,15 @@ PointCloud::recomputeAABB()
 		bbox.merge(points[i].getPosition());
 }
 
-// void findPointsInBox(AxisAlignedBox3 &boxTemp,
-// 	std::vector<Point> &pointsTemp, std::vector<Point> &points){
+void findPointsInBox(AxisAlignedBox3 &boxTemp,
+	std::vector<Point> &pointsTemp, std::vector<Point> &points){
 	
-// 	for(int i=0; i<points.size(); i++){
-// 		if(boxTemp.intersects(points[i].getPosition())){
-// 			pointsTemp.push_back(points[i]);
-// 		}
-// 	}
-// }
+	for(int i=0; i<points.size(); i++){
+		if(boxTemp.intersects(points[i].getPosition())){
+			pointsTemp.push_back(points[i]);
+		}
+	}
+}
 
 int getMinIndex(float* f){
 	float minVal = std::min(f[0], std::min(f[1],f[2]));
@@ -182,11 +182,15 @@ int getMinIndex(float* f){
 void findPointsKDTree(AxisAlignedBox3 &boxTemp,
 	std::vector<Point> &pointsTemp, 
 	PointKDTree &kdTree){
+
 	std::vector<const Point*> pointerToPoints;
 	kdTree.rangeQuery(boxTemp, pointerToPoints);
+	
+	// std::cout<<pointerToPoints.size()<<std::endl;
 	for(int i=0; i<pointerToPoints.size(); i++){
 		pointsTemp.push_back(*pointerToPoints[i]);
 	}
+
 }
 
 void
@@ -213,6 +217,7 @@ PointCloud::estimateNormals(){
 		// KD Tree
 		findPointsKDTree(boxTemp, pointsTemp, kdTree);
 
+		std::cout<<pointsTemp.size()<<std::endl;
 		//Finding a
 		VectorN<3,float> a(0);
 		for(int i=0; i<pointsTemp.size(); i++){
