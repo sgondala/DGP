@@ -2,6 +2,7 @@
 #define __A1_PointCloud_hpp__
 
 #include "Point.hpp"
+#include "PointKDTree.hpp"
 #include "DGP/AxisAlignedBox3.hpp"
 #include "DGP/Graphics/RenderSystem.hpp"
 

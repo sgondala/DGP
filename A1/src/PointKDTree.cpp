@@ -85,7 +85,6 @@ void PointKDTree::rangeQuery(AxisAlignedBox3 const & query,
 			points_in_range.push_back(allPoints[i]);
 		}
 	}
-
 	// Write a helper function rangeQuery(node, query, points_in_range):
 	//   - If node->bbox does not intersect query, return
 	//   - If node->lo && node->lo->bbox intersects query, rangeQuery(node->lo, query, points_in_range)
