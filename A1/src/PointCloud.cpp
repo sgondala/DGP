@@ -162,16 +162,15 @@ PointCloud::recomputeAABB()
 		bbox.merge(points[i].getPosition());
 }
 
-void findPointsInBox(AxisAlignedBox3 &boxTemp,
-	std::vector<Point> &pointsTemp, std::vector<Point> &points){
+// void findPointsInBox(AxisAlignedBox3 &boxTemp,
+// 	std::vector<Point> &pointsTemp, std::vector<Point> &points){
 	
-	for(int i=0; i<points.size(); i++){
-		if(boxTemp.intersects(points[i].getPosition())){
-			pointsTemp.push_back(points[i]);
-		}
-	}
-
-}
+// 	for(int i=0; i<points.size(); i++){
+// 		if(boxTemp.intersects(points[i].getPosition())){
+// 			pointsTemp.push_back(points[i]);
+// 		}
+// 	}
+// }
 
 int getMinIndex(float* f){
 	float minVal = std::min(f[0], std::min(f[1],f[2]));
@@ -180,10 +179,20 @@ int getMinIndex(float* f){
 	if(minVal==f[2]){return 2;}
 }
 
+void findPointsKDTree(AxisAlignedBox3 &boxTemp,
+	std::vector<Point> &pointsTemp, 
+	PointKDTree &kdTree){
+	std::vector<const Point*> pointerToPoints;
+	kdTree.rangeQuery(boxTemp, pointerToPoints);
+	for(int i=0; i<pointerToPoints.size(); i++){
+		pointsTemp.push_back(*pointerToPoints[i]);
+	}
+}
+
 void
 PointCloud::estimateNormals(){
-	int radius = 2; // How much to put the radius
-	
+	int radius = 2; // TODO ME How much to put the radius
+	PointKDTree kdTree(points);
 	for(int i=0; i<points.size(); i++){
 		Point current = points[i];
 		Vector3 currentPosition = current.getPosition();
@@ -198,8 +207,12 @@ PointCloud::estimateNormals(){
 		
 		//Finding points in box
 		std::vector<Point> pointsTemp;
-		findPointsInBox(boxTemp, pointsTemp, points);
+		// Normal Way
+		// findPointsInBox(boxTemp, pointsTemp, points);
 		
+		// KD Tree
+		findPointsKDTree(boxTemp, pointsTemp, kdTree);
+
 		//Finding a
 		VectorN<3,float> a(0);
 		for(int i=0; i<pointsTemp.size(); i++){
