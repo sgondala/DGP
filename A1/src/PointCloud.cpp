@@ -195,45 +195,50 @@ void findPointsKDTree(AxisAlignedBox3 &boxTemp,
 
 void
 PointCloud::estimateNormals(){
-	int radius = 2; // TODO ME How much to put the radius
+
 	PointKDTree kdTree(points);
-	for(int i=0; i<points.size(); i++){
+	double radius = 0.5;
+
+	for (int i = 0; i < points.size(); ++i){
+
 		Point current = points[i];
 		Vector3 currentPosition = current.getPosition();
 		AxisAlignedBox3 boxTemp;
 		Vector3 low, high;
-		for(int i=0; i<3; i++){
-			low[i] = currentPosition[i] - radius;
-			high[i]  = currentPosition[i] + radius;
+		for(int j=0; j<3; j++){
+			low[j] = currentPosition[j] - radius;
+			high[j]  = currentPosition[j] + radius;
 		}
+
+		boxTemp.addPoint(currentPosition);
 		boxTemp.addPoint(low);
 		boxTemp.addPoint(high);
 		
 		//Finding points in box
 		std::vector<Point> pointsTemp;
+
 		// Normal Way
 		// findPointsInBox(boxTemp, pointsTemp, points);
 		
 		// KD Tree
 		findPointsKDTree(boxTemp, pointsTemp, kdTree);
 
-		std::cout<<pointsTemp.size()<<std::endl;
 		//Finding a
 		VectorN<3,float> a(0);
-		for(int i=0; i<pointsTemp.size(); i++){
-			a += pointsTemp[i].getPosition();
+		for(int j=0; j<pointsTemp.size(); j++){
+			a += pointsTemp[j].getPosition();
 		}
 		a /= pointsTemp.size();
 
 		//Making matrix
 		Matrix3 finalMatrix;
 		finalMatrix.makeZero();
-		for(int i=0; i<pointsTemp.size(); i++){
+		for(int j=0; j<pointsTemp.size(); j++){
 			// Vector3 ul = pointsTemp[i].getPosition() - a;
 			MatrixMN<3,1,float> y;
-			y.setColumn(0, pointsTemp[i].getPosition() - a);
+			y.setColumn(0, pointsTemp[j].getPosition() - a);
 			MatrixMN<1,3,float> yTrans;
-			yTrans.setRow(0, pointsTemp[i].getPosition() - a);
+			yTrans.setRow(0, pointsTemp[j].getPosition() - a);
 			Matrix3 finalMatrixTemp = y*yTrans;
 			finalMatrix += finalMatrixTemp;
 		}
@@ -247,8 +252,8 @@ PointCloud::estimateNormals(){
 		int indexOfEigenVector = getMinIndex(eigenValues);
 		VectorN<3,float> normalRequired = eigenVectors[indexOfEigenVector];
 		points[i].setNormal(normalRequired);
-	}
 
+	}
 }
 
 
