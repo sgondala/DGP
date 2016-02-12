@@ -1,7 +1,7 @@
 #include "PointKDTree.hpp"
 #include <list>
 
-Node::~Node() {
+PointKDTree::Node::~Node() {
 	delete lo;
 	delete hi;
 }
@@ -19,7 +19,7 @@ void fillLoAndHi(std::vector<Point*> &loPoints,
 	}
 }
 
-Node::Node(std::vector<Point*> &points){
+PointKDTree::Node::Node(std::vector<Point*> &points){
 	static size_t const MAX_POINTS_PER_LEAF = 5;
 	for(int i=0; i<points.size(); i++){
 		bbox.addPoint((*points[i]).getPosition());
@@ -57,11 +57,11 @@ PointKDTree::PointKDTree(std::vector<Point> const & points): root(NULL) {
 	for(int i=0; i<points.size(); i++){
 		tempPoints.push_back(const_cast<Point*> (&points[i]));
 	}
-	root = new Node(tempPoints);
+	root = new PointKDTree::Node(tempPoints);
 	tempPoints.clear();
 }
 
-void fillPoints(Node* root, std::vector<const Point*> &allPoints){
+void fillPoints(PointKDTree::Node* root, std::vector<const Point*> &allPoints){
 	if(root==NULL){return;}
 	if((root->points).size()==0){
 		fillPoints(root->lo, allPoints);
@@ -74,7 +74,7 @@ void fillPoints(Node* root, std::vector<const Point*> &allPoints){
 	}
 }
 
-void rangeQueryHelper(Node* root, AxisAlignedBox3 const & query,
+void rangeQueryHelper(PointKDTree::Node* root, AxisAlignedBox3 const & query,
 	std::vector<Point *> &points_in_range){ 
 
 	if(root==NULL){
