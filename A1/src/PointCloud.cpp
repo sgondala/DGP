@@ -183,7 +183,7 @@ void findPointsKDTree(AxisAlignedBox3 &boxTemp,
 	std::vector<Point> &pointsTemp, 
 	PointKDTree &kdTree){
 
-	std::vector<const Point*> pointerToPoints;
+	std::vector<Point*> pointerToPoints;
 	kdTree.rangeQuery(boxTemp, pointerToPoints);
 	
 	// std::cout<<pointerToPoints.size()<<std::endl;

@@ -15,12 +15,12 @@ struct Node {
   /** Destructor. */
   ~Node();
 
-  Node(std::vector<const Point*> &points);
+  Node(std::vector<Point*> &points);
 
   AxisAlignedBox3 bbox;         ///< Bounding box of the node.
   Node * lo;                    ///< Child of the node with smaller coordinates.
   Node * hi;                    ///< Child of the node with larger coordinates.
-  std::vector<const Point *> points;  ///< Set of points in the node (empty unless leaf node).
+  std::vector<Point *> points;  ///< Set of points in the node (empty unless leaf node).
 };
 
 
@@ -50,7 +50,7 @@ class PointKDTree : private Noncopyable
      * Note that if needed, the index of a returned point p (of type Point *) can be recovered as (p - &points[0]), where
      * points is the array used to construct the kd-tree.
      */
-    void rangeQuery(AxisAlignedBox3 const & query, std::vector<const Point *> & points_in_range) const;
+    void rangeQuery(AxisAlignedBox3 const & query, std::vector<Point *> & points_in_range) const;
 
 }; // class PointKDTree
 

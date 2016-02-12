@@ -47,31 +47,18 @@ Node::Node(std::vector<Point*> &points){
 		}
 		lo = new Node(loPoints);
 		hi = new Node(hiPoints);
-		loPoints.clear();
-		hiPoints.clear();
+		// loPoints.clear();
+		// hiPoints.clear();
 	}
 }
 
-PointKDTree::PointKDTree(std::vector<Point> const & points): root(NULL) {
+PointKDTree::PointKDTree(std::vector<Point> &points): root(NULL) {
 	std::vector<Point*> tempPoints; //Probable memory wastage
 	for(int i=0; i<points.size(); i++){
-		tempPoints.push_back(const_cast<Point*> (&points[i]));
+		tempPoints.push_back(&points[i]);
 	}
 	root = new Node(tempPoints);
-	tempPoints.clear();
-}
-
-void fillPoints(Node* root, std::vector<const Point*> &allPoints){
-	if(root==NULL){return;}
-	if((root->points).size()==0){
-		fillPoints(root->lo, allPoints);
-		fillPoints(root->hi, allPoints);
-	}
-	else{
-		for(int i=0; i<(root->points).size(); i++){
-			allPoints.push_back((root->points)[i]);
-		}
-	}
+	// tempPoints.clear();
 }
 
 void rangeQueryHelper(Node* root, AxisAlignedBox3 const & query,
@@ -94,11 +81,10 @@ void rangeQueryHelper(Node* root, AxisAlignedBox3 const & query,
 				points_in_range.push_back(thisPointPointer);
 			}
 		}
-
 	}
 }
 
-void PointKDTree::rangeQuery(AxisAlignedBox3 const & query, 
+void PointKDTree::rangeQuery(AxisAlignedBox3 & query, 
 	std::vector<Point *> & points_in_range) const{
 	points_in_range.clear();
 
@@ -112,4 +98,5 @@ void PointKDTree::rangeQuery(AxisAlignedBox3 const & query,
 	// 		points_in_range.push_back(allPoints[i]);
 	// 	}
 	// }
+
 }
