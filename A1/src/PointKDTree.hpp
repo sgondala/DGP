@@ -7,7 +7,7 @@
 #include "DGP/Noncopyable.hpp"
 #include "DGP/Vector3.hpp"
 
-		/** A node of the kd-tree. */
+/** A node of the kd-tree. */
 
 
 

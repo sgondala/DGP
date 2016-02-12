@@ -9,6 +9,7 @@ PointKDTree::Node::~Node() {
 void fillLoAndHi(std::vector<Point*> &loPoints, 
 	std::vector<Point*> &hiPoints, std::vector<Point*> &points, 
 	float midValue, int index){
+
 	for(int i=0; i<points.size(); i++){
 		if((points[i]->getPosition())[index] < midValue){
 			loPoints.push_back(points[i]);
@@ -33,9 +34,9 @@ PointKDTree::Node::Node(std::vector<Point*> &points){
 	else {
 		std::vector<Point*> loPoints; //TODO ME Might have a leak here
 		std::vector<Point*> hiPoints;
-		Vector3 high = bbox.getHigh();
-		Vector3 low = bbox.getLow();
-		int maxLength = std::max(high[0]-low[0], std::max(high[1] - low[1], high[2] - low[2]));
+		VectorN<3,float> high = bbox.getHigh();
+		VectorN<3,float> low = bbox.getLow();
+		float maxLength = std::max(high[0]-low[0], std::max(high[1] - low[1], high[2] - low[2]));
 		if(maxLength == high[0] - low[0]){
 			fillLoAndHi(loPoints, hiPoints, points, (high[0] + low[0])/2.0, 0);
 		}
@@ -47,8 +48,6 @@ PointKDTree::Node::Node(std::vector<Point*> &points){
 		}
 		lo = new Node(loPoints);
 		hi = new Node(hiPoints);
-		loPoints.clear();
-		hiPoints.clear();
 	}
 }
 
@@ -58,7 +57,6 @@ PointKDTree::PointKDTree(std::vector<Point> const & points): root(NULL) {
 		tempPoints.push_back(const_cast<Point*> (&points[i]));
 	}
 	root = new PointKDTree::Node(tempPoints);
-	tempPoints.clear();
 }
 
 void fillPoints(PointKDTree::Node* root, std::vector<const Point*> &allPoints){
