@@ -71,4 +71,32 @@ std::pair<std::pair<Vector3,double>,std::pair<Vector3,double> > angle(myWindow* 
 
 }
 
+
+Vector3 getPoint(Vector3 intersection, double incidentAngle
+	MeshFace* incidentFace, MeshEdge* commonEdge, MeshVertex* nearestVertex){
+	double lengthToVertex = (nearestVertex->getPosition() - intersection).length();
+	MeshFace* newFace = NULL;
+	for(auto it = nearestVertex->facesBegin(); it!=nearestVertex->facesEnd(); it++){
+		if(*it!=incidentFace){
+			newFace = *it;
+		}
+	}
+	MeshVertex* v1 = NULL, *v2 = NULL;
+	for(auto it = newFace->verticesBegin(); it!=newFace->verticesEnd(); it++){
+		if(*it==nearestVertex){continue;}
+		if(v1==NULL){
+			v1 = *it;
+		}
+		else{
+			v2 = *it;
+		}				
+	}
+	Vector3 vec1 = nearestVertex->getPosition() - v1->getPosition();
+	Vector3 vec2 = nearestVertex->getPosition() - v2->getPosition();
+	double vertexAngle = Math::radiansToDegrees(Math::fastArcCos((vec1.dot(vec2))/(vec1.length()*vec2.length())));
+	double thirdAngle = 180 - (incidentAngle + vertexAngle);
+		
+
+}
+
 #endif
