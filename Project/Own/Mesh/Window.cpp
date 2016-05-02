@@ -4,10 +4,10 @@
 #include "MeshFace.hpp"
 #include <algorithm>
 
-#ifndef __Window_CPP__
-#define __Window_CPP__
+#ifndef __myWindow_CPP__
+#define __myWindow_CPP__
 
-struct Window{
+struct myWindow{
 	MeshEdge* e1;
 	double d1,d2;
 	double p1,p2; // Between 0 and 1
@@ -15,9 +15,9 @@ struct Window{
 	// MeshVertex* lastVertex;
 	double distanceOfLast;
 
-	Window(){}
+	myWindow(){}
 
-	Window(MeshVertex *v, MeshEdge *e, MeshFace *f){ // 
+	myWindow(MeshVertex *v, MeshEdge *e, MeshFace *f){ // 
 		e1 = e;
 		incidentFacePtr = f;
 		distanceOfLast = 0;
@@ -27,7 +27,7 @@ struct Window{
 		d2 = (e->getEndpoint(1)->getPosition() - v->getPosition()).length();	
 	}
 	
-	bool operator<(const Window& rhs) const{
+	bool operator<(const myWindow& rhs) const{
 		return std::min(d1 + distanceOfLast,d2 + distanceOfLast)<
 		std::min(rhs.d1 + rhs.distanceOfLast,rhs.d2 + rhs.distanceOfLast);
 	}
