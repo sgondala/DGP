@@ -11,4 +11,6 @@ MeshEdge* getOtherEdge(MeshFace* face, MeshVertex* vertex);
 
 bool is_saddle(MeshVertex* v);
 
+std::pair<std::pair<Vector3,double>,std::pair<Vector3,double> > angle(myWindow* w);
+
 #endif
