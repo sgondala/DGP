@@ -15,6 +15,7 @@
 #include "Common.hpp"
 #include "DGP/Colors.hpp"
 #include "DGP/Vector3.hpp"
+#include "DGP/Math.hpp"
 #include <list>
 
 // Forward declarations
@@ -167,8 +168,11 @@ class MeshVertex
     bool is_saddle(){
       double angle = 0;
       for (FaceConstIterator fi = facesBegin(); fi != facesEnd(); ++fi){
-        MeshVertex* v1, v2, v3;
-        std::list<Vertex *>::iterator i1 = fi->verticesBegin();
+        MeshVertex* v1;
+        MeshVertex* v2;
+        MeshVertex* v3;
+        
+        std::list<MeshVertex* >::iterator i1 = (*fi)->verticesBegin();
         int flag = 0;
         v1 = *i1;
         if(v1 == this)flag = 1;
@@ -185,15 +189,15 @@ class MeshVertex
         if(flag == 1){
           Vector3 p1 = v2position - v1position;
           Vector3 p2 = v3position - v1position;
-          angle += radiansToDegrees(fastArcCos((p1.dot(p2))/(p1.length()*p2.length())));
+          angle += DGP::Math::radiansToDegrees(DGP::Math::fastArcCos((p1.dot(p2))/(p1.length()*p2.length())));
         }else if(flag == 2){
           Vector3 p1 = v1position - v2position;
           Vector3 p2 = v3position - v2position;
-          angle += radiansToDegrees(fastArcCos((p1.dot(p2))/(p1.length()*p2.length())));
+          angle += DGP::Math::radiansToDegrees(DGP::Math::fastArcCos((p1.dot(p2))/(p1.length()*p2.length())));
         }else if(flag == 3){
           Vector3 p1 = v1position - v3position;
           Vector3 p2 = v2position - v3position;
-          angle += radiansToDegrees(fastArcCos((p1.dot(p2))/(p1.length()*p2.length())));
+          angle += DGP::Math::radiansToDegrees(DGP::Math::fastArcCos((p1.dot(p2))/(p1.length()*p2.length())));
         }
       }
       return (angle > 360.0);
