@@ -1,7 +1,7 @@
 #include "Window.cpp"
 #include "helperFunctions.hpp"
 #include <set>
-
+#include <iostream>
 
 int
 usage(int argc, char * argv[])
@@ -26,7 +26,18 @@ main(int argc, char * argv[])
   
   std::set<myWindow*> pQueue;
   MeshVertex* src, *dst;
-  
+  int srcIndex, dstIndex;
+  std::cin >> srcIndex >> dstIndex;
+
+  int ind = 0;
+  for(auto it = mesh.verticesBegin(); it!= mesh.verticesEnd(); it++){
+    if(ind==srcIndex) src = &(*it);
+    if(ind==dstIndex) dst = &(*it);
+    Vector3 temp  = (*it).getPosition();
+    std::cout << temp[0] << " " << temp[1] << " " << temp[2] << " " << std::endl;
+    ind++;
+  }
+
   // Get the first set of windows from the Mesh Vertex
   for(auto it = src->facesBegin(); it!= src->facesEnd(); it++){
     MeshEdge* e = getOtherEdge(*it, src);
@@ -34,12 +45,14 @@ main(int argc, char * argv[])
     pQueue.insert(temp);
   }
 
+
+
   // Dijkstra's algorithm starts  
   while(!pQueue.empty()){
     myWindow* parent = *(pQueue.begin());
     pQueue.erase(pQueue.begin());
     auto preReqs = angle(parent);
-// p1,e1,d1,angle1,2,face
+    // p1,e1,d1,angle1,2,face
     auto response1 = getPointPosition(preReqs.first.first, preReqs.first.second, parent->incidentFacePtr,parent->e1);
     auto response2 = getPointPosition(preReqs.second.first, preReqs.second.second, parent->incidentFacePtr,parent->e1);
     double p1 = std::get<0>(response1), p2 = std::get<0>(response2);
@@ -54,7 +67,9 @@ main(int argc, char * argv[])
     }
     if(fCommon==NULL){continue;}
     auto newWindows = newWindow(parent, p1, e1, d1, angle1, p2, e2, d2, angle2, fCommon);      
+    std :: cout<< "!! " <<std::endl;
     add_window_edge(newWindows.first, &pQueue);
+    std :: cout<< "22 " <<std::endl;
     if(newWindows.second != NULL) add_window_edge(newWindows.second, &pQueue);
   }
 

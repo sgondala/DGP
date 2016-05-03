@@ -268,7 +268,7 @@ class Mesh : public virtual NamedObject, private Noncopyable
     /** Save the mesh to a disk file. */
     bool save(std::string const & path) const;
 
-  private:
+  public:
     /**
      * Utility function to draw a face. Must be enclosed in the appropriate
      * RenderSystem::beginPrimitive()/RenderSystem::endPrimitive() block.
