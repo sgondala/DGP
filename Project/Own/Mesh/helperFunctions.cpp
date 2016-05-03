@@ -56,7 +56,7 @@ bool is_saddle(MeshVertex* v){
 	}
 
 
-
+//Returns angles,endpoints of a window
 std::pair<std::pair<Vector3,double>,std::pair<Vector3,double> > angle(myWindow* w){
   Vector3 v1 = w->e1->getEndpoint(0)->getPosition();
   Vector3 v2 = w->e1->getEndpoint(1)->getPosition();
@@ -67,12 +67,12 @@ std::pair<std::pair<Vector3,double>,std::pair<Vector3,double> > angle(myWindow* 
   double length_side = (v_orig1 - v_orig2).length();
   double angle1 = DGP::Math::radiansToDegrees(DGP::Math::fastArcCos((w->d1*w->d1 + length_side*length_side - w->d2*w->d2)/2*(w->d1*length_side)));
   	double angle2 = DGP::Math::radiansToDegrees(DGP::Math::fastArcCos((w->d2*w->d2 + length_side*length_side - w->d1*w->d1)/2*(w->d2*length_side)));
-  return std::make_pair(std::make_pair(v_orig1,angle1),std::make_pair(v_orig2,angle2));
+  return std::make_pair(std::make_pair(v_orig1, 180 - angle1),std::make_pair(v_orig2,angle2));
 
 }
 
 
-Vector3 getPoint(Vector3 intersection, double incidentAngle
+Vector3 getPoint(Vector3 intersection, double incidentAngle,
 	MeshFace* incidentFace, MeshEdge* commonEdge, MeshVertex* nearestVertex){
 	double lengthToVertex = (nearestVertex->getPosition() - intersection).length();
 	MeshFace* newFace = NULL;
@@ -96,7 +96,59 @@ Vector3 getPoint(Vector3 intersection, double incidentAngle
 	double vertexAngle = Math::radiansToDegrees(Math::fastArcCos((vec1.dot(vec2))/(vec1.length()*vec2.length())));
 	double thirdAngle = 180 - (incidentAngle + vertexAngle);
 		
+}
 
+std::pair<myWindow*,myWindow* >newWindow(myWindow* parent,double p1, MeshEdge* e1, double d1, double angle1, double p2, MeshEdge* e2, double d2, double angle2, MeshFace* f){
+
+	if(e1 == e2){
+		return new myWindow(e1, f, d1 + parent->d1, d2 + parent->d2, p1, p2, parent->distanceOfLast);
+	}else{
+		int endpoint_consider = 0;
+		if(parent->e1->getEndpoint(0) == e1->getEndpoint(0) || parent->e1->getEndpoint(1) == e1->getEndpoint(0)){
+			angle1 = 180 - angle1;
+			endpoint_consider = 1;
+		}
+		double l1 = d1 + parent->d1;
+		Vector3 point1 = p1*e1->getEndpoint(0) + (1 - p1)*e1->getEndpoint(1);
+		double l2 = (point1 - e1->getEndpoint(endpoint_consider)).length();
+		double d1_window = std::sqrt(l1*l1 + l2*l2 - 2*l1*l2*cos(Math::degreesToRadians(angle1)));	
+
+		myWindow* w1;
+		if(!endpoint_consider)w1 = new myWindow(e1, f, d1_window, l1, 1, p1, parent->distanceOfLast);
+		else w1 = new myWindow(e1, f, l1, d1_window, p1, 0, parent->distanceOfLast);
+
+		endpoint_consider = 0;
+		if(parent->e1->getEndpoint(0) == e2->getEndpoint(0) || parent->e1->getEndpoint(1) == e2->getEndpoint(0)){
+			angle2 = 180 - angle2;
+			endpoint_consider = 1;
+		}
+		l1 = d2 + parent->d2;
+		point1 = p2*e2->getEndpoint(0) + (1 - p2)*e2->getEndpoint(1);
+		l2 = (point1 - e2->getEndpoint(endpoint_consider)).length();
+		d1_window = std::sqrt(l1*l1 + l2*l2 - 2*l1*l2*cos(Math::degreesToRadians(angle2)));	
+
+		myWindow* w2 = NULL;
+		if(!endpoint_consider)w2 = new myWindow(e2, f, d1_window, l1, 1, p2, parent->distanceOfLast);
+		else w2 = new myWindow(e2, f, l1, d1_window, p2, 0, parent->distanceOfLast);
+
+		return std::make_pair(w1, w2);
+
+	}
+	
+}
+
+void add_window_edge(myWindow* w){
+	for (auto i = w->e1->windows.begin(); i != w->e1->windows.end(); ++i)
+	{
+		if(w->p1 < (*i)->p1 &&  w->p2 > (*i)->p2){
+
+		}else if(w->p1 < (*i)-> p1 && w->p2 > (*i)-> p2){
+
+		}else if(w->p1 > (*i)-> p1 && w->p2  < (*i)->p2){
+
+		}
+
+	}
 }
 
 #endif

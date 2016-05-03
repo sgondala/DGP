@@ -7,6 +7,7 @@
 // Forward declarations
 class MeshVertex;
 class MeshFace;
+class myWindow;
 
 /** Edge of a mesh. */
 class MeshEdge
@@ -22,6 +23,7 @@ class MeshEdge
     typedef typename FaceList::iterator        FaceIterator;       ///< Iterator over faces.
     typedef typename FaceList::const_iterator  FaceConstIterator;  ///< Const iterator over faces.
 
+    std::list<myWindow* > windows;
     /** Construct from two endpoints. */
     MeshEdge(Vertex * v0 = NULL, Vertex * v1 = NULL) : quadric_collapse_error(-1)
     {

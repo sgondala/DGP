@@ -26,6 +26,17 @@ struct myWindow{
 		d1 = (e->getEndpoint(0)->getPosition() - v->getPosition()).length();	
 		d2 = (e->getEndpoint(1)->getPosition() - v->getPosition()).length();	
 	}
+
+	myWindow(MeshEdge *e, MeshFace *f, double d11, double d12, double p11, double p12, double dOL){
+		e1 = e;
+		incidentFacePtr = f;
+		distanceOfLast = dOL;
+		p1 = p11;
+		p2 = p12;
+		distanceOfLast =  dOL;
+		d1 = d11;
+		d2 = d12;
+	}
 	
 	bool operator<(const myWindow& rhs) const{
 		return std::min(d1 + distanceOfLast,d2 + distanceOfLast)<
