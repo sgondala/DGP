@@ -3,7 +3,7 @@
 #include "MeshEdge.hpp"
 #include "MeshFace.hpp"
 #include "Window.cpp"
-
+#include <math.h>
 
 #ifndef __Helper_CPP__
 #define __Helper_CPP__
@@ -66,24 +66,15 @@ std::pair<std::pair<Vector3,double>,std::pair<Vector3,double> > angle(myWindow* 
 
   double length_side = (v_orig1 - v_orig2).length();
   double angle1 = DGP::Math::radiansToDegrees(DGP::Math::fastArcCos((w->d1*w->d1 + length_side*length_side - w->d2*w->d2)/2*(w->d1*length_side)));
-  	double angle2 = DGP::Math::radiansToDegrees(DGP::Math::fastArcCos((w->d2*w->d2 + length_side*length_side - w->d1*w->d1)/2*(w->d2*length_side)));
+  double angle2 = DGP::Math::radiansToDegrees(DGP::Math::fastArcCos((w->d2*w->d2 + length_side*length_side - w->d1*w->d1)/2*(w->d2*length_side)));
   return std::make_pair(std::make_pair(v_orig1,angle1),std::make_pair(v_orig2,angle2));
 
 }
 
-
-Vector3 getPoint(Vector3 intersection, double incidentAngle
-	MeshFace* incidentFace, MeshEdge* commonEdge, MeshVertex* nearestVertex){
-	double lengthToVertex = (nearestVertex->getPosition() - intersection).length();
-	MeshFace* newFace = NULL;
-	for(auto it = nearestVertex->facesBegin(); it!=nearestVertex->facesEnd(); it++){
-		if(*it!=incidentFace){
-			newFace = *it;
-		}
-	}
+double angleAtVertex(MeshVertex* v, MeshFace* f){
 	MeshVertex* v1 = NULL, *v2 = NULL;
-	for(auto it = newFace->verticesBegin(); it!=newFace->verticesEnd(); it++){
-		if(*it==nearestVertex){continue;}
+	for(auto it = f->verticesBegin(); it!=f->verticesEnd(); it++){
+		if(*it==v){continue;}
 		if(v1==NULL){
 			v1 = *it;
 		}
@@ -91,12 +82,84 @@ Vector3 getPoint(Vector3 intersection, double incidentAngle
 			v2 = *it;
 		}				
 	}
-	Vector3 vec1 = nearestVertex->getPosition() - v1->getPosition();
-	Vector3 vec2 = nearestVertex->getPosition() - v2->getPosition();
+	Vector3 vec1 = v->getPosition() - v1->getPosition();
+	Vector3 vec2 = v->getPosition() - v2->getPosition();
 	double vertexAngle = Math::radiansToDegrees(Math::fastArcCos((vec1.dot(vec2))/(vec1.length()*vec2.length())));
-	double thirdAngle = 180 - (incidentAngle + vertexAngle);
-		
+	return vertexAngle;
+}
 
+// Takes 2 edges, common vertex, a point and angle of inner triangle
+// Returns point value [0,1] writ endPoint[0], angle to endpoint0, distance
+std::tuple<double, double, double> getPointPositionOnEdge(MeshEdge* incidentEdge,MeshEdge* otherEdge, MeshVertex* commonVertex, 
+	MeshFace* face, double angle, Vector3 point){
+	double vertexAngle = angleAtVertex(commonVertex, face);
+	double lengthToPoint = (commonVertex->getPosition() - point).length();
+	double distanceOnOtherEdge = sin(angle * 3.1415/180) * lengthToPoint / sin((vertexAngle + angle)*3.1415/180);
+	double lengthOfOtherEdge = otherEdge->getLength();
+	if(lengthOfOtherEdge < distanceOnOtherEdge){ // Lies beyond the point
+		double returnVal = -1;
+		double returnAngle = -1;
+		double returnDistance = -1;
+		return std::make_tuple(returnVal, returnAngle, returnDistance);
+	}
+	else{
+		if(otherEdge->getEndpointIndex(commonVertex)==0){
+			double returnVal = distanceOnOtherEdge/lengthOfOtherEdge;
+			double returnAngle = 180 - (vertexAngle + angle);
+			double returnDistance = sin(vertexAngle * 3.1415/180) *  lengthToPoint / sin((vertexAngle + angle)*3.1415/180);
+			return std::make_tuple(returnVal, returnAngle, returnDistance);
+		}
+		else{
+			double returnVal = 1 - distanceOnOtherEdge/lengthOfOtherEdge;
+			double returnAngle = (vertexAngle + angle);
+			double returnDistance = sin(vertexAngle * 3.1415/180) *  lengthToPoint / sin((vertexAngle + angle)*3.1415/180);
+			return std::make_tuple(returnVal, returnAngle, returnDistance);
+		}
+	}
+
+}
+
+// Assuming they have a common vertex
+MeshVertex* getCommonVertex(MeshEdge* e1, MeshEdge* e2){
+	if((e1->getEndpoint(0) == e2->getEndpoint(0)) ||
+		(e1->getEndpoint(0) == e2->getEndpoint(1))){
+		return e1->getEndpoint(0);
+	}
+	return e1->getEndpoint(1);
+}
+
+std::tuple<double,double,double,MeshEdge*> getPointPosition(Vector3 point, double angle,
+	MeshFace* incidentFace, MeshEdge* edge){
+
+	MeshFace* otherFace = NULL;
+	for(auto it = edge->facesBegin(); it != edge->facesEnd(); it++){
+		if(*it != incidentFace){
+			otherFace = *it;
+		}
+	}
+
+	for(auto it = otherFace->edgesBegin(); it!=otherFace->edgesEnd(); it++){
+		if(*it == edge){continue;}
+		MeshEdge* otherEdge = *it;
+		MeshVertex* commonVertex = getCommonVertex(edge, otherEdge);
+		double angleToBeSent;
+		if(edge->getEndpointIndex(commonVertex)==0){
+			angleToBeSent = 180 - angle;
+		}
+		else{
+			angleToBeSent = angle; 
+		}
+		auto responseVal = getPointPositionOnEdge(edge, otherEdge, commonVertex, 
+			otherFace, angleToBeSent, point);
+		if(std::get<0>(responseVal) == -1){
+			continue;
+		}
+		double returnVal = std::get<0>(responseVal);
+		double returnAngle = std::get<1>(responseVal);
+		double returnDistance = std::get<2>(responseVal);
+		MeshEdge* returnEdge = *it;
+		return std::make_tuple(returnVal, returnAngle, returnDistance, returnEdge);
+	}
 }
 
 #endif

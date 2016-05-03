@@ -3,6 +3,7 @@
 #include "MeshEdge.hpp"
 #include "MeshFace.hpp"
 #include "Window.cpp"
+#include <tuple>
 
 #ifndef __Helper_HPP__
 #define __Helper_HPP__
@@ -12,5 +13,14 @@ MeshEdge* getOtherEdge(MeshFace* face, MeshVertex* vertex);
 bool is_saddle(MeshVertex* v);
 
 std::pair<std::pair<Vector3,double>,std::pair<Vector3,double> > angle(myWindow* w);
+
+std::tuple<double, double, double> getPointPositionOnEdge(MeshEdge* incidentEdge,MeshEdge* otherEdge, MeshVertex* commonVertex, 
+	MeshFace* face, double angle, Vector3 point);
+
+std::tuple<double, double, double, MeshEdge*> getPointPosition(Vector3 point, double angle,
+	MeshFace* incidentFace, MeshEdge* edge);
+
+MeshVertex* getCommonVertex(MeshEdge* e1, MeshEdge* e2);
+
 
 #endif
