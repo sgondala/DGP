@@ -24,6 +24,10 @@ MeshEdge::nextAroundEndpoint(int i)
   return NULL;
 }
 
+double MeshEdge::getLength() {
+      return (endpoints[0]->getPosition() - endpoints[1]->getPosition()).length();
+}
+
 void
 MeshEdge::updateQuadricCollapseError()
 {

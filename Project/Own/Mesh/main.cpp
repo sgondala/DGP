@@ -36,7 +36,7 @@ main(int argc, char * argv[])
 
   // Dijkstra's algorithm starts  
   while(!pQueue.empty()){
-    myWindow* parent = pQueue.begin();
+    myWindow* parent = *(pQueue.begin());
     pQueue.erase(pQueue.begin());
     auto preReqs = angle(parent);
 // p1,e1,d1,angle1,2,face
@@ -45,7 +45,7 @@ main(int argc, char * argv[])
     double p1 = std::get<0>(response1), p2 = std::get<0>(response2);
     MeshEdge* e1 = std::get<3>(response1), *e2 = std::get<3>(response2);
     double d1 = std::get<2>(response1), d2 = std::get<2>(response2);
-    double angle1 = std::get<1>(response1), d2 = std::get<1>(response2);
+    double angle1 = std::get<1>(response1), angle2 = std::get<1>(response2);
     MeshFace* fCommon = NULL;
     for(auto it = parent->e1->facesBegin(); it != parent->e1->facesEnd(); it++){
       if(*it!=parent->incidentFacePtr){
@@ -54,8 +54,8 @@ main(int argc, char * argv[])
     }
     if(fCommon==NULL){continue;}
     auto newWindows = newWindow(parent, p1, e1, d1, angle1, p2, e2, d2, angle2, fCommon);      
-    add_window_edge(pQueue, newWindows.first);
-    add_window_edge(pQueue, newWindows.second);
+    add_window_edge(newWindows.first, &pQueue);
+    if(newWindows.second != NULL) add_window_edge(newWindows.second, &pQueue);
   }
 
 
@@ -66,11 +66,11 @@ main(int argc, char * argv[])
    for(auto it = (dstEdge->windows).begin(); it!= (dstEdge->windows).end(); it++){
     if(p1 > std::min((*it)->p1, (*it)->p2)){
       p1 = std::min((*it)->p1, (*it)->p2);
-      dstP1 =  (p1 == (*it)->p1)? d1 : d2;
+      dstP1 =  (p1 == (*it)->p1)? (*it)->d1 : (*it)->d2;
     }
     if(p2 < std::max((*it)->p1, (*it)->p2)){
       p2 = std::max((*it)->p1, (*it)->p2);
-      dstP2 =  (p2 == (*it)->p1)? d1 : d2;
+      dstP2 =  (p2 == (*it)->p1)? (*it)->d1 : (*it)->d2;
     }
    }
    if(indexOfVertex == 0){
