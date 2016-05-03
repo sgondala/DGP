@@ -162,11 +162,8 @@ std::tuple<double,double,double,MeshEdge*> getPointPosition(Vector3 point, doubl
 	}
 }
 
-
-
-
-
-std::pair<myWindow*,myWindow* >newWindow(myWindow* parent,double p1, MeshEdge* e1, double d1, double angle1, double p2, MeshEdge* e2, double d2, double angle2, MeshFace* f){
+std::pair<myWindow*,myWindow*> newWindow(myWindow* parent,double p1, MeshEdge* e1, double d1, double angle1, 
+	double p2, MeshEdge* e2, double d2, double angle2, MeshFace* f){
 
 	if(e1 == e2){
 		return new myWindow(e1, f, d1 + parent->d1, d2 + parent->d2, p1, p2, parent->distanceOfLast);
@@ -200,23 +197,22 @@ std::pair<myWindow*,myWindow* >newWindow(myWindow* parent,double p1, MeshEdge* e
 		else w2 = new myWindow(e2, f, l1, d1_window, p2, 0, parent->distanceOfLast);
 
 		return std::make_pair(w1, w2);
-
 	}
 	
 }
 
-void add_window_edge(myWindow* w){
-	for (auto i = w->e1->windows.begin(); i != w->e1->windows.end(); ++i)
-	{
-		if(w->p1 < (*i)->p1 &&  w->p2 > (*i)->p2){
+// void add_window_edge( std::set myWindow* w){
+	// for (auto i = w->e1->windows.begin(); i != w->e1->windows.end(); ++i)
+	// {
+	// 	if(w->p1 < (*i)->p1 &&  w->p2 > (*i)->p2){
 
-		}else if(w->p1 < (*i)-> p1 && w->p2 > (*i)-> p2){
+	// 	}else if(w->p1 < (*i)-> p1 && w->p2 > (*i)-> p2){
 
-		}else if(w->p1 > (*i)-> p1 && w->p2  < (*i)->p2){
+	// 	}else if(w->p1 > (*i)-> p1 && w->p2  < (*i)->p2){
 
-		}
+	// 	}
 
-	}
-}
+	// }
+// }
 
 #endif

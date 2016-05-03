@@ -42,6 +42,13 @@ struct myWindow{
 		return std::min(d1 + distanceOfLast,d2 + distanceOfLast)<
 		std::min(rhs.d1 + rhs.distanceOfLast,rhs.d2 + rhs.distanceOfLast);
 	}
+
+	// Translates it into XY plane, p1 is at 0 
+	std::pair<double,double> getSourcePoint(){
+		double baseLength = (p2-p1)*e1->getLength();
+		double angle1 = Math::fastArcCos((baseLength*baseLength + d1*d1 - d2*d2)/(2*baseLength*d1));
+		return std::make_pair(d1 * cos(angle1), d1* sin(angle1));
+	}
 };
 
 #endif

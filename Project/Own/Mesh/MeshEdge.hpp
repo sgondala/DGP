@@ -165,6 +165,7 @@ class MeshEdge
     double getLength() {
       return (endpoints[0]->getPosition() - endpoints[1]->getPosition()).length();
     }
+    
   private:
     friend class Mesh;
 
