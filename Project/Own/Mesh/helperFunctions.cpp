@@ -62,8 +62,8 @@ std::pair<std::pair<Vector3,double>,std::pair<Vector3,double> > angle(myWindow* 
   Vector3 v1 = w->e1->getEndpoint(0)->getPosition();
   Vector3 v2 = w->e1->getEndpoint(1)->getPosition();
 
-  Vector3 v_orig1 = v1*w->p1 + v2*(1 - w->p1);
-  Vector3 v_orig2 = v1*w->p2 + v2*(1 - w->p2);
+  Vector3 v_orig1 = v1*(1 - w->p1) + v2*w->p1;
+  Vector3 v_orig2 = v1*(1 - w->p2) + v2*(w->p2);
 
   double length_side = (v_orig1 - v_orig2).length();
   double angle1 = DGP::Math::radiansToDegrees(DGP::Math::fastArcCos((w->d1*w->d1 + length_side*length_side - w->d2*w->d2)/2*(w->d1*length_side)));
@@ -177,13 +177,13 @@ std::pair<myWindow*,myWindow* >newWindow(myWindow* parent,double p1, MeshEdge* e
 			endpoint_consider = 1;
 		}
 		double l1 = d1 + parent->d1;
-		Vector3 point1 = p1*e1->getEndpoint(0) + (1 - p1)*e1->getEndpoint(1);
+		Vector3 point1 = (1 - p1)*e1->getEndpoint(0) + p1*e1->getEndpoint(1);
 		double l2 = (point1 - e1->getEndpoint(endpoint_consider)).length();
 		double d1_window = std::sqrt(l1*l1 + l2*l2 - 2*l1*l2*cos(Math::degreesToRadians(angle1)));	
 
 		myWindow* w1;
-		if(!endpoint_consider)w1 = new myWindow(e1, f, d1_window, l1, 1, p1, parent->distanceOfLast);
-		else w1 = new myWindow(e1, f, l1, d1_window, p1, 0, parent->distanceOfLast);
+		if(!endpoint_consider)w1 = new myWindow(e1, f, d1_window, l1, 0, p1, parent->distanceOfLast);
+		else w1 = new myWindow(e1, f, l1, d1_window, p1, 1, parent->distanceOfLast);
 
 		endpoint_consider = 0;
 		if(parent->e1->getEndpoint(0) == e2->getEndpoint(0) || parent->e1->getEndpoint(1) == e2->getEndpoint(0)){
@@ -191,13 +191,13 @@ std::pair<myWindow*,myWindow* >newWindow(myWindow* parent,double p1, MeshEdge* e
 			endpoint_consider = 1;
 		}
 		l1 = d2 + parent->d2;
-		point1 = p2*e2->getEndpoint(0) + (1 - p2)*e2->getEndpoint(1);
+		point1 = (1 - p2)*e2->getEndpoint(0) + (p2)*e2->getEndpoint(1);
 		l2 = (point1 - e2->getEndpoint(endpoint_consider)).length();
 		d1_window = std::sqrt(l1*l1 + l2*l2 - 2*l1*l2*cos(Math::degreesToRadians(angle2)));	
 
 		myWindow* w2 = NULL;
-		if(!endpoint_consider)w2 = new myWindow(e2, f, d1_window, l1, 1, p2, parent->distanceOfLast);
-		else w2 = new myWindow(e2, f, l1, d1_window, p2, 0, parent->distanceOfLast);
+		if(!endpoint_consider)w2 = new myWindow(e2, f, d1_window, l1, 0, p2, parent->distanceOfLast);
+		else w2 = new myWindow(e2, f, l1, d1_window, p2, 1, parent->distanceOfLast);
 
 		return std::make_pair(w1, w2);
 
@@ -205,18 +205,120 @@ std::pair<myWindow*,myWindow* >newWindow(myWindow* parent,double p1, MeshEdge* e
 	
 }
 
-void add_window_edge(myWindow* w){
+
+//This function splits windows with common interval 
+list<myWindow* > add_window_edge(myWindow* w, set<myWindow*> &pQueue){
+	list<myWindow*> l1;
+	double length_edge = w->e1->getLength();
 	for (auto i = w->e1->windows.begin(); i != w->e1->windows.end(); ++i)
 	{
+		
 		if(w->p1 < (*i)->p1 &&  w->p2 > (*i)->p2){
+		   std::pair<double, double> source0 = w->getSourcePoint();
+			double ip1x = ((*i)->p1 - w->p1)*length_edge;
+			double d11 = sqrt((source0->first - ip1x)*(source0->first - ip1x)) + (source0->second*source0->second));
+			myWindow* w11 = new myWindow(w->e1, w->f, w->d1, d11, w->p1, (ip1x + w->p1*length_edge)/length_edge, w->distanceOfLast);
+			w->p1 = (*i)->p2;
+			w->d1 = (*i)->d2;
+			w11->e1->windows.push_back(w11);
+			pQueue.insert(w11);
 
-		}else if(w->p1 < (*i)-> p1 && w->p2 > (*i)-> p2){
-
-		}else if(w->p1 > (*i)-> p1 && w->p2  < (*i)->p2){
+		}else if(w->p1 > (*i)->p1 &&  w->p2 < (*i)->p2){
+			std::pair<double, double> source0 = (*i)->getSourcePoint();
+			double wp1x = (w->p1 - (*i)->p1)*length_edge;
+			double d11 = sqrt((source0->first - wp1x)*(source0->first - wp1x)) + (source0->second*source0->second));
+			myWindow* w11 = new myWindow(w->e1, w->f, (*i)->d1, d11, (*i)->p1, (wp1x + (*i)->p1*length_edge)/length_edge, (*i)->distanceOfLast);
+			(*i)->p1 = w->p2;
+			(*i)->d1 = w->d2;
+			w11->e1->windows.push_back(w11);
+			pQueue.insert(w11);
+			if(!pQueue.find(*i1))pQueue.insert(*i1);
 
 		}
+		else if(w->p1 < (*i)-> p1 && w->p2 > (*i)-> p1){
+			double wp1x = 0, wp1y = 0;
+			double wp2x = (w->p2 - w->p1)*length_edge, wp2y = 0;
+			std::pair<double, double> source0 = w->getSourcePoint();
+			double ip1x = ((*i)->p1 - w->p1)*length_edge, ip1y = 0;
+			double ip2x = ((*i)->p2 - w->p1)*length_edge, ip2y = 0;
+			std::pair<double, double> source1 = (*i)->getSourcePoint();
+			source1->first += ip1x;
 
+			double alpha = source1->first - source0->first;
+			double beta = (*i1)->distanceOfLast - w->distanceOfLast;
+			double gamma = (source0->first)*(source0->first) + (source0->second)*(source0->second) - (source1->first)*(source1->first) - (source1->second)*(source1->second);
+			gamma -= beta*beta;
+
+			double A = (alpha*alpha - beta*beta);
+			double B = (gamma*alpha + 2*source1->first*beta*beta);
+			double C = 0.25*gamma*gamma - ((source1->first)*(source1->first) + (source1->second)*(source1->second))*beta*beta;
+
+			double sol1,sol2;
+			if(B*B - 4*A*C >= 0)sol1 = (-B + sqrt(B*B - 4*A*C))/(2*A);
+			if(B*B - 4*A*C >= 0)sol2 = (-B - sqrt(B*B - 4*A*C))/(2*A);
+			double new_d;
+			if( sol1 >= ip1x && sol1 <= wp2x){
+				double new_p2 = (sol1 + w->p1*length_edge)/length_edge;
+				w->p2 = new_p2;
+				new_d = sqrt((source0->first - sol1)*(source0->first - sol1) + source0->second*source0->second);
+				w->d2 = new_d;
+				(*i)->p1 = new_p2;
+				(*i)->d1 = new_d;
+			}else if(sol2 >= ip1x && sol2 <= wp2x){
+				double new_p2 = (sol2 + w->p1*length_edge)/length_edge;
+				w->p2 = new_p2;
+				new_d = sqrt((source0->first - sol2)*(source0->first - sol2) + source0->second*source0->second);
+				w->d2 = new_d;
+				(*i)->p1 = new_p2;
+				(*i)->d1 = new_d;
+			}
+			if(!pQueue.find(*i1))pQueue.insert(*i1);
+
+
+		}else if(w->p1 > (*i)-> p1 && w->p2  < (*i)->p2){
+			double ip1x = 0, ip1y = 0;
+			double ip2x = ((*i)->p2 - (*i)->p1)*length_edge, ip2y = 0;
+			std::pair<double, double> source0 = (*i)->getSourcePoint();
+			double wp1x = (w->p1 - (*i)->p1)*length_edge, wp1y = 0;
+			double wp2x = (w->p2 - (*i)->p1)*length_edge, wp2y = 0;
+			std::pair<double, double> source1 = w->getSourcePoint();
+			source1->first += wp1x;
+
+			double alpha = source1->first - source0->first;
+			double beta = w->distanceOfLast - (*i1)->distanceOfLast;
+			double gamma = (source0->first)*(source0->first) + (source0->second)*(source0->second) - (source1->first)*(source1->first) - (source1->second)*(source1->second);
+			gamma -= beta*beta;
+
+			double A = (alpha*alpha - beta*beta);
+			double B = (gamma*alpha + 2*source1->first*beta*beta);
+			double C = 0.25*gamma*gamma - ((source1->first)*(source1->first) + (source1->second)*(source1->second))*beta*beta;
+
+			double sol1,sol2;
+			if(B*B - 4*A*C >= 0)sol1 = (-B + sqrt(B*B - 4*A*C))/(2*A);
+			if(B*B - 4*A*C >= 0)sol2 = (-B - sqrt(B*B - 4*A*C))/(2*A);
+			double new_d;
+			if( sol1 >= wp1x && sol1 <= ip2x){
+				double new_p2 = (sol1 + (*i)->p1*length_edge)/length_edge;
+				(*i)->p2 = new_p2;
+				new_d = sqrt((source0->first - sol1)*(source0->first - sol1) + source0->second*source0->second);
+				(*i)->d2 = new_d;
+				w->p1 = new_p2;
+				w->d1 = new_d;
+			}else if(sol2 >= wp1x && sol2 <= ip2x){
+				double new_p2 = (sol2 + (*i)->p1*length_edge)/length_edge;
+				(*i)->p2 = new_p2;
+				new_d = sqrt((source0->first - sol2)*(source0->first - sol2) + source0->second*source0->second);
+				(*i)->d2 = new_d;
+				w->p1 = new_p2;
+				w->d1 = new_d;
+			}
+			if(!pQueue.find(*i1))pQueue.insert(*i1);
+
+		}
+		
 	}
+	w->e1->windows.push_back(w);
+	pQueue.insert(w);
 }
 
 #endif
